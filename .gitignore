@@ -1,0 +1,5 @@
+fbot/
+fbot-lavalink/
+/.env
+.DS_Store
+.idea/

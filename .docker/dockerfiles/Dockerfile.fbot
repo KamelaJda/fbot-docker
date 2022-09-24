@@ -1,0 +1,14 @@
+FROM openjdk:17-slim
+
+COPY ./.docker/files/run.sh .
+
+WORKDIR /fbot
+
+RUN apt-get update \
+    && apt-get install -y unzip \
+    && apt-get install -y jq \
+    && mkdir plugins/ \
+    && mkdir /files/
+
+# Start script
+CMD ["sh", "/run.sh"]

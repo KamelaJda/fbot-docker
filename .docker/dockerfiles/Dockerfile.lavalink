@@ -1,0 +1,11 @@
+FROM openjdk:17-slim
+
+COPY ./.docker/files/lavalink.sh .
+
+WORKDIR /lavalink
+
+RUN apt-get update \
+    && apt-get install -y wget
+
+# Start script
+CMD ["sh", "/lavalink.sh"]

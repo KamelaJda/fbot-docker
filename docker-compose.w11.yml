@@ -1,0 +1,72 @@
+services:
+  fbot:
+    image: fbot/fbot
+    build:
+      context: .
+      dockerfile: ./.docker/dockerfiles/Dockerfile.fbot
+    container_name: fbot
+    environment:
+      MIN_MEMORY: ${FB0T_MIN_MEMORY}
+      MAX_MEMORY: ${FB0T_MAX_MEMORY}
+      BOT_TOKEN: ${FB0T_TOKEN}
+    depends_on:
+      - fbot_database
+      - fbot_lavalink
+      - fbot_redis
+    stdin_open: true
+    networks:
+      - fbot_network
+    volumes:
+      - './fbot/core:/files/jars/core'
+      - './fbot/plugins:/files/jars/plugins/'
+      - './fbot/config:/files/config.json'
+
+  fbot_lavalink:
+    image: fbot/lavalink
+    restart: always
+    build:
+      context: .
+      dockerfile: ./.docker/dockerfiles/Dockerfile.lavalink
+    environment:
+      LAVALINK_VERSION: ${LAVALINK_VERSION}
+      MIN_MEMORY: ${LAVALINK_MIN_MEMORY}
+      MAX_MEMORY: ${LAVALINK_MAX_MEMORY}
+    container_name: fbot-lavalink
+    stdin_open: true
+    networks:
+      - fbot_network
+    volumes:
+      - './fbot-lavalink/application.yml:/files/application.yml'
+
+  fbot_database:
+    image: postgres:11
+    restart: always
+    container_name: fbot_database
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5438:5432"
+    networks:
+      - fbot_network
+
+  fbot_redis:
+    image: redis:7.0.0
+    restart: always
+    container_name: fbot_redis
+    command: redis-server --save 20 1 --loglevel warning --requirepass ${REDIS_PASSWORD}
+    ports:
+      - '6379:6379'
+    networks:
+      - fbot_network
+    volumes:
+      - cache:/data
+
+networks:
+  fbot_network:
+    name: fbot_network
+    driver: bridge
+
+volumes:
+  cache:
+    driver: local
